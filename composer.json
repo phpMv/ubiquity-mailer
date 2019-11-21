@@ -12,7 +12,8 @@
 	],
 	"require" : {
 		"php" : ">7.0",
-		"phpmailer/phpmailer": "~6.1"
+		"phpmailer/phpmailer": "~6.1",
+		"phpmv/ubiquity": "dev-master"
 	},
 	"license" : "Apache-2.0",
 	"authors" : [{

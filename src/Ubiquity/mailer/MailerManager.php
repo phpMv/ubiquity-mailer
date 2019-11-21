@@ -2,6 +2,8 @@
 namespace Ubiquity\mailer;
 
 use PHPMailer\PHPMailer\PHPMailer;
+use Ubiquity\utils\base\UArray;
+use Ubiquity\utils\base\UFileSystem;
 
 /**
  * Ubiquity\mailer$MailerManager
@@ -19,20 +21,49 @@ class MailerManager {
 	
 	private static $config;
 	
+	private static $dConfig=['host'=>'127.0.0.1','port'=>587,'auth'=>false,'user'=>'','password'=>'','protocol'=>'smtp'];
+	
+	private static function getConfigPath(){
+		return \ROOT.\DS.'config'.\DS.'mailer.php';
+	}
+	
 	/**
 	 * Start the mailer manager.
 	 */
 	public static function start(){
-		self::$mailer=new PHPMailer();
-		self::loadConfig();
+		$mailer=new PHPMailer();
+		$config=self::loadConfig();
+		$mailer->Host=$config['host'];
+		$mailer->Port=$config['port'];
+		$mailer->Mailer=$config['protocol'];
+		if($config[protocol]==='smtp'){
+			if($config['auth']){
+				$mailer->Password=$config['password'];
+				$mailer->Username=$config['user'];
+			}
+		}
+		self::$mailer=$mailer;
 	}
 	
 	public static function initConfig(){
-		
+		self::saveConfig( self::$dConfig);
+	}
+	
+	public static function saveConfig($config){
+		$content = "<?php\nreturn " . UArray::asPhpArray ( $config, 'array' ) . ';';
+		$filename = "";
+		$path = self::getConfigPath();
+		if (UFileSystem::safeMkdir ( $path )) {
+			if (@\file_put_contents ( $path . \DS . $filename, $content, LOCK_EX ) === false) {
+				throw new \Exception ( "Unable to write mailer config file: {$filename}" );
+			}
+		} else {
+			throw new \Exception ( "Unable to create folder : {$path}" );
+		}
 	}
 	
 	public static function loadConfig(){
-		self::$config=include \ROOT.\DS.'config'.\DS.'mailer.php';
+		return self::$config=\array_merge(include self::getConfigPath(),self::$dConfig);
 	}
 }
 
