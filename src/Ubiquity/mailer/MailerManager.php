@@ -73,5 +73,10 @@ class MailerManager {
 	public static function loadConfig() {
 		return self::$config = \array_merge(include self::getConfigPath(), self::$dConfig);
 	}
+
+	public static function send(AbstractMail $mail): bool {
+		$mail->build(self::$mailer);
+		return self::$mailer->send();
+	}
 }
 

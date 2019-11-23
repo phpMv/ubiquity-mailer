@@ -19,7 +19,8 @@ abstract class AbstractMail {
 		'to' => 'addAdress',
 		'cc' => 'addCC',
 		'bcc' => 'addBCC',
-		'replyTo' => 'addReplyTo'
+		'replyTo' => 'addReplyTo',
+		'from' => 'setFrom'
 	];
 
 	/**
@@ -141,6 +142,49 @@ abstract class AbstractMail {
 	}
 
 	/**
+	 * Attach a file to the message.
+	 *
+	 * @param string $file
+	 * @param array $options
+	 * @return $this
+	 */
+	public function attachFile($file, array $options = []) {
+		$this->attachments[] = compact('file', 'options');
+		return $this;
+	}
+
+	/**
+	 * Attach in-memory data as an attachment.
+	 *
+	 * @param string $data
+	 * @param string $name
+	 * @param array $options
+	 * @return $this
+	 */
+	public function attachData($data, $name, array $options = []) {
+		$this->rawAttachments[] = compact('data', 'name', 'options');
+		return $this;
+	}
+
+	protected function buildAttachments(PHPMailer $mailer) {
+		foreach ($this->attachments as $attach) {
+			$options = $attach['options'] ?? [];
+			$mailer->addAttachment($attach['file'], $options['name'] ?? '', $options['encoding'] ?? 'base64', $options['type'] ?? '', $options['disposition'] ?? 'attachment');
+		}
+	}
+
+	protected function buildRowAttachments(PHPMailer $mailer) {
+		foreach ($this->rawAttachments as $attach) {
+			$options = $attach['options'] ?? [];
+			$mailer->addStringAttachment($attach['data'], $attach['name'] ?? '', $options['encoding'] ?? 'base64', $options['type'] ?? '', $options['disposition'] ?? 'attachment');
+		}
+	}
+
+	protected function getSubject() {
+		return $this->subject ?? \get_class();
+	}
+
+	/**
 	 * Set the recipients of the message.
 	 *
 	 * @param object|array|string $address
@@ -208,7 +252,7 @@ abstract class AbstractMail {
 
 	protected function bodyText() {}
 
-	public function send(PHPMailer $mailer) {
+	public function build(PHPMailer $mailer) {
 		foreach ($this->swapMethods as $property => $method) {
 			$values = $this->{$property};
 			if (! isset($values['email'])) {
@@ -219,9 +263,10 @@ abstract class AbstractMail {
 				$mailer->{$method}($values['email'], $values['name'] ?? null);
 			}
 		}
-		$mailer->Subject = $this->subject ?? \get_class();
+		$mailer->Subject = $this->getSubject();
 		$mailer->Body = $this->body();
 		$mailer->AltBody = $this->bodyText();
+		$this->buildAttachments($mailer);
 	}
 
 	/**
