@@ -29,7 +29,8 @@ class MailerManager {
 		'auth' => false,
 		'user' => '',
 		'password' => '',
-		'protocol' => 'smtp'
+		'protocol' => 'smtp',
+		'ns' => 'mail'
 	];
 
 	private static function getConfigPath() {
@@ -77,6 +78,18 @@ class MailerManager {
 	public static function send(AbstractMail $mail): bool {
 		$mail->build(self::$mailer);
 		return self::$mailer->send();
+	}
+
+	public static function getNamespace() {
+		return self::$config['ns'] ?? 'mail';
+	}
+
+	/**
+	 *
+	 * @return \PHPMailer\PHPMailer\PHPMailer
+	 */
+	public static function getMailer() {
+		return MailerManager::$mailer;
 	}
 }
 

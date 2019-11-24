@@ -80,11 +80,11 @@ abstract class AbstractMail {
 	public $rawAttachments = [];
 
 	/**
-	 * The callbacks for the message.
+	 * The callback for the message.
 	 *
-	 * @var array
+	 * @var callable
 	 */
-	public $callbacks = [];
+	public $callback;
 
 	/**
 	 * Set the sender of the message.
@@ -180,7 +180,7 @@ abstract class AbstractMail {
 		}
 	}
 
-	protected function getSubject() {
+	public function getSubject() {
 		return $this->subject ?? \get_class();
 	}
 
@@ -248,9 +248,9 @@ abstract class AbstractMail {
 		$this->view = new View();
 	}
 
-	abstract protected function body();
+	abstract public function body();
 
-	protected function bodyText() {}
+	public function bodyText() {}
 
 	public function build(PHPMailer $mailer) {
 		foreach ($this->swapMethods as $property => $method) {
@@ -267,6 +267,9 @@ abstract class AbstractMail {
 		$mailer->Body = $this->body();
 		$mailer->AltBody = $this->bodyText();
 		$this->buildAttachments($mailer);
+		if (isset($this->callback)) {
+			$mailer->action_function = $this->callback;
+		}
 	}
 
 	/**
@@ -278,16 +281,14 @@ abstract class AbstractMail {
 	 *        	Variable or associative array to pass to the view
 	 *        	If a variable is passed, it will have the name **$data** in the view,
 	 *        	If an associative array is passed, the view retrieves variables from the table's key names
-	 * @param boolean $asString
-	 *        	If true, the view is not displayed but returned as a string (usable in a variable)
 	 * @throws \Exception
-	 * @return string null or the view content if **$asString** parameter is true
+	 * @return string
 	 */
-	protected function loadView($viewName, $pData = NULL, $asString = false) {
+	protected function loadView($viewName, $pData = NULL) {
 		if (isset($pData)) {
 			$this->view->setVars($pData);
 		}
-		return $this->view->render($viewName, $asString);
+		return $this->view->render($viewName, TRUE);
 	}
 }
 
