@@ -28,6 +28,11 @@ class MailerQueue {
 		];
 	}
 
+	public static function later(string $mailerClass, \DateInterval $duration) {
+		$d = new \DateTime();
+		self::sendAt($mailerClass, $d->add($duration));
+	}
+
 	public static function sendAt(string $mailerClass, \DateTime $date) {
 		self::$queue[] = [
 			'class' => $mailerClass,
@@ -82,6 +87,34 @@ class MailerQueue {
 			}
 		}
 		return $result;
+	}
+
+	public static function all() {
+		return self::$queue;
+	}
+
+	public static function clear() {
+		self::$queue = [];
+	}
+
+	public static function remove($mailerClass) {
+		foreach (self::$queue as $index => $value) {
+			if ($value['class'] === $mailerClass) {
+				unset(self::$queue[$index]);
+			}
+		}
+	}
+
+	public static function removeAt(\DateTime $date, $inInterval = false) {
+		foreach (self::$queue as $index => $value) {
+			if (($value['at'] ?? null) === $date) {
+				unset(self::$queue[$index]);
+			} elseif ($inInterval && isset($value['between'])) {
+				if ($date >= $value['between'] && $date <= $value['and']) {
+					unset(self::$queue[$index]);
+				}
+			}
+		}
 	}
 }
 
