@@ -60,10 +60,13 @@ class MailerQueue {
 	}
 
 	public function save(): void {
-		$content = "<?php\nreturn " . UArray::asPhpArray($this->queue, 'array') . ';';
-		CacheManager::$cache->store($this->rootKey . 'queue', $content);
-		$content = "<?php\nreturn " . UArray::asPhpArray($this->dequeue, 'array') . ';';
-		CacheManager::$cache->store($this->rootKey . 'dequeue', $content);
+		$this->saveContent('queue');
+		$this->saveContent('dequeue');
+	}
+
+	private function saveContent($part): void {
+		$content = "<?php\nreturn " . UArray::asPhpArray($this->{$part}, 'array') . ';';
+		CacheManager::$cache->store($this->rootKey . $part, $content);
 	}
 
 	public function toSendAt(\DateTime $date): array {
