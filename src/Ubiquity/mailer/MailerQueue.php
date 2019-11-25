@@ -136,7 +136,7 @@ class MailerQueue {
 	public function sent($index): bool {
 		if (isset($this->queue[$index])) {
 			$mail = $this->queue[$index];
-			$mail['sendedAt'] = new \DateTime();
+			$mail['sentAt'] = new \DateTime();
 			unset($this->queue[$index]);
 			$this->dequeue[] = $mail;
 			return true;
