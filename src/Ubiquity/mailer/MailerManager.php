@@ -21,6 +21,12 @@ class MailerManager {
 	 */
 	private static $mailer;
 
+	/**
+	 *
+	 * @var MailerQueue
+	 */
+	private static $queue;
+
 	private static $config;
 
 	private static $dConfig = [
@@ -53,6 +59,7 @@ class MailerManager {
 			}
 		}
 		self::$mailer = $mailer;
+		self::$queue = new MailerQueue();
 	}
 
 	public static function initConfig() {
@@ -90,6 +97,24 @@ class MailerManager {
 	 */
 	public static function getMailer() {
 		return MailerManager::$mailer;
+	}
+
+	public static function sendQueue($limit = NULL): int {
+		$mails = self::$queue->toSend();
+		$i = 0;
+		foreach ($mails as $mailInfos) {
+			if (isset($limit) && $limit > $i) {
+				$mailClass = $mailInfos['class'];
+				$mail = new $mailClass();
+				if (self::send($mail)) {
+					self::$queue->sent($mailInfos['index']);
+				}
+				$i ++;
+			} else {
+				break;
+			}
+		}
+		return $i;
 	}
 }
 

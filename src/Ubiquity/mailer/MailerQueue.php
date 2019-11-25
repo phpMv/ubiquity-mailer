@@ -14,61 +14,76 @@ use Ubiquity\utils\base\UArray;
  */
 class MailerQueue {
 
-	private static $queue;
+	/**
+	 *
+	 * @var array
+	 */
+	private $queue;
 
-	private static $rootKey = 'mailer/queue';
+	/**
+	 *
+	 * @var array
+	 */
+	private $dequeue;
 
-	public static function start() {
-		self::$queue = CacheManager::$cache->fetch(self::$rootKey);
+	private $rootKey = 'mailer/';
+
+	public function __construct() {
+		$this->queue = CacheManager::$cache->fetch($this->rootKey . 'queue');
+		$this->dequeue = CacheManager::$cache->fetch($this->rootKey . 'dequeue');
 	}
 
-	public static function add(string $mailerClass) {
-		self::$queue[] = [
+	public function add(string $mailerClass): void {
+		$this->queue[] = [
 			'class' => $mailerClass
 		];
 	}
 
-	public static function later(string $mailerClass, \DateInterval $duration) {
+	public function later(string $mailerClass, \DateInterval $duration): void {
 		$d = new \DateTime();
-		self::sendAt($mailerClass, $d->add($duration));
+		$this->sendAt($mailerClass, $d->add($duration));
 	}
 
-	public static function sendAt(string $mailerClass, \DateTime $date) {
-		self::$queue[] = [
+	public function sendAt(string $mailerClass, \DateTime $date): void {
+		$this->queue[] = [
 			'class' => $mailerClass,
 			'at' => $date
 		];
 	}
 
-	public static function sendBetween(string $mailerClass, \DateTime $startDate, \DateTime $endDate) {
-		self::$queue[] = [
+	public function sendBetween(string $mailerClass, \DateTime $startDate, \DateTime $endDate): void {
+		$this->queue[] = [
 			'class' => $mailerClass,
 			'between' => $startDate,
 			'and' => $endDate
 		];
 	}
 
-	public static function save() {
-		$content = "<?php\nreturn " . UArray::asPhpArray(self::$queue, 'array') . ';';
-		CacheManager::$cache->store(self::$rootKey, $content);
+	public function save(): void {
+		$content = "<?php\nreturn " . UArray::asPhpArray($this->queue, 'array') . ';';
+		CacheManager::$cache->store($this->rootKey . 'queue', $content);
+		$content = "<?php\nreturn " . UArray::asPhpArray($this->dequeue, 'array') . ';';
+		CacheManager::$cache->store($this->rootKey . 'dequeue', $content);
 	}
 
-	public static function toSendAt(\DateTime $date) {
+	public function toSendAt(\DateTime $date): array {
 		$result = [];
-		foreach (self::$queue as $mail) {
-			self::toSendMailAt($result, $mail, $date);
+		foreach ($this->queue as $index => $mail) {
+			$this->toSendMailAt($result, $mail, $date, $index);
 		}
 		return $result;
 	}
 
-	private static function toSendMailAt(array &$result, array $mail, \DateTime $date): bool {
+	private function toSendMailAt(array &$result, array $mail, \DateTime $date, $index): bool {
 		if (isset($mail['at'])) {
 			if ($mail['at'] <= $date) {
+				$mail['index'] = $index;
 				$result[] = $mail;
 				return true;
 			}
 		} elseif (isset($mail['between'])) {
 			if ($date >= $mail['between'] && $date <= $mail['and']) {
+				$mail['index'] = $index;
 				$result[] = $mail;
 				return true;
 			}
@@ -76,45 +91,57 @@ class MailerQueue {
 		return false;
 	}
 
-	public static function toSend() {
+	public function toSend(): array {
 		$result = [];
 		$date = new \DateTime();
-		foreach (self::$queue as $mail) {
+		foreach ($this->queue as $index => $mail) {
 			if (! isset($mail['at']) && ! isset($mail['between'])) {
+				$mail['index'] = $index;
 				$result[] = $mail;
 			} else {
-				self::toSendAt($date);
+				$this->toSendMailAt($result, $mail, $date, $index);
 			}
 		}
 		return $result;
 	}
 
-	public static function all() {
-		return self::$queue;
+	public function all(): array {
+		return $this->queue;
 	}
 
-	public static function clear() {
-		self::$queue = [];
+	public function clear(): void {
+		$this->queue = [];
 	}
 
-	public static function remove($mailerClass) {
-		foreach (self::$queue as $index => $value) {
+	public function remove($mailerClass): void {
+		foreach ($this->queue as $index => $value) {
 			if ($value['class'] === $mailerClass) {
-				unset(self::$queue[$index]);
+				unset($this->queue[$index]);
 			}
 		}
 	}
 
-	public static function removeAt(\DateTime $date, $inInterval = false) {
-		foreach (self::$queue as $index => $value) {
+	public function removeAt(\DateTime $date, $inInterval = false): void {
+		foreach ($this->queue as $index => $value) {
 			if (($value['at'] ?? null) === $date) {
-				unset(self::$queue[$index]);
+				unset($this->queue[$index]);
 			} elseif ($inInterval && isset($value['between'])) {
 				if ($date >= $value['between'] && $date <= $value['and']) {
-					unset(self::$queue[$index]);
+					unset($this->queue[$index]);
 				}
 			}
 		}
+	}
+
+	public function sent($index): bool {
+		if (isset($this->queue[$index])) {
+			$mail = $this->queue[$index];
+			$mail['sendedAt'] = new \DateTime();
+			unset($this->queue[$index]);
+			$this->dequeue[] = $mail;
+			return true;
+		}
+		return false;
 	}
 }
 
