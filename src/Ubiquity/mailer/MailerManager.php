@@ -4,6 +4,7 @@ namespace Ubiquity\mailer;
 use PHPMailer\PHPMailer\PHPMailer;
 use Ubiquity\utils\base\UArray;
 use Ubiquity\utils\base\UFileSystem;
+use Ubiquity\cache\ClassUtils;
 
 /**
  * Ubiquity\mailer$MailerManager
@@ -115,6 +116,35 @@ class MailerManager {
 			}
 		}
 		return $i;
+	}
+
+	/**
+	 * Returns an array of mail files
+	 *
+	 * @param boolean $silent
+	 * @return array
+	 */
+	protected static function _getFiles($silent = false) {
+		$typeDir = \ROOT . \DS . \str_replace("\\", \DS, self::getNamespace());
+		if (! $silent) {
+			echo 'Mail directory is ' . $typeDir . "\n";
+		}
+		return UFileSystem::glob_recursive($typeDir . \DS . '*.php');
+	}
+
+	/**
+	 * Returns an array of the mail class names
+	 *
+	 * @param boolean $silent
+	 * @return string[]
+	 */
+	public static function getMailClasses($silent = false) {
+		$result = [];
+		$files = self::_getFiles($silent);
+		foreach ($files as $file) {
+			$result[] = ClassUtils::getClassFullNameFromFile($file);
+		}
+		return $result;
 	}
 }
 
