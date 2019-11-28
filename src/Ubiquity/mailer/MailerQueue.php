@@ -29,8 +29,13 @@ class MailerQueue {
 	private $rootKey = 'mailer/';
 
 	public function __construct() {
-		$this->queue = CacheManager::$cache->fetch($this->rootKey . 'queue');
-		$this->dequeue = CacheManager::$cache->fetch($this->rootKey . 'dequeue');
+		$cache = CacheManager::$cache;
+		if ($cache->exists($this->rootKey . 'queue')) {
+			$this->queue = $cache->fetch($this->rootKey . 'queue');
+		}
+		if ($cache->exists($this->rootKey . 'dequeue')) {
+			$this->dequeue = $cache->fetch($this->rootKey . 'dequeue');
+		}
 	}
 
 	public function add(string $mailerClass): void {
@@ -109,7 +114,11 @@ class MailerQueue {
 	}
 
 	public function all(): array {
-		return $this->queue;
+		return $this->queue ?? [];
+	}
+
+	public function allSent(): array {
+		return $this->dequeue ?? [];
 	}
 
 	public function clear(): void {

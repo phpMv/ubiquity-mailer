@@ -41,7 +41,7 @@ class MailerManager {
 	];
 
 	private static function getConfigPath() {
-		return \ROOT . \DS . 'config' . \DS . 'mailer.php';
+		return \ROOT . 'config' . \DS . 'mailer.php';
 	}
 
 	/**
@@ -53,7 +53,7 @@ class MailerManager {
 		$mailer->Host = $config['host'];
 		$mailer->Port = $config['port'];
 		$mailer->Mailer = $config['protocol'];
-		if ($config[protocol] === 'smtp') {
+		if ($config['protocol'] === 'smtp') {
 			if ($config['auth']) {
 				$mailer->Password = $config['password'];
 				$mailer->Username = $config['user'];
@@ -70,7 +70,7 @@ class MailerManager {
 	public static function saveConfig($config) {
 		$content = "<?php\nreturn " . UArray::asPhpArray($config, 'array') . ';';
 		$path = self::getConfigPath();
-		if (UFileSystem::safeMkdir($path)) {
+		if (UFileSystem::safeMkdir(\dirname($path))) {
 			if (@\file_put_contents($path, $content, LOCK_EX) === false) {
 				throw new \Exception("Unable to write mailer config file: {$path}");
 			}
@@ -145,6 +145,14 @@ class MailerManager {
 			$result[] = ClassUtils::getClassFullNameFromFile($file);
 		}
 		return $result;
+	}
+
+	public static function getQueue() {
+		return self::$queue->all();
+	}
+
+	public static function getDequeue() {
+		return self::$queue->allSent();
 	}
 }
 
