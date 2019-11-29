@@ -38,10 +38,25 @@ class MailerQueue {
 		}
 	}
 
-	public function add(string $mailerClass): void {
-		$this->queue[] = [
-			'class' => $mailerClass
-		];
+	public function add(string $mailerClass): bool {
+		if (! $this->search($mailerClass)) {
+			$d = (new \DateTime())->add(new \DateInterval('PT1H'));
+			$this->queue[] = [
+				'class' => $mailerClass,
+				'at' => $d
+			];
+			return true;
+		}
+		return false;
+	}
+
+	public function search(string $mailerClass): bool {
+		foreach ($this->queue as $element) {
+			if ($element['class'] === $mailerClass && (! isset($element['at']) && ! isset($element['between']))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function later(string $mailerClass, \DateInterval $duration): void {
@@ -70,7 +85,7 @@ class MailerQueue {
 	}
 
 	private function saveContent($part): void {
-		$content = "<?php\nreturn " . UArray::asPhpArray($this->{$part}, 'array') . ';';
+		$content = "return " . UArray::asPhpArray($this->{$part}, 'array') . ';';
 		CacheManager::$cache->store($this->rootKey . $part, $content);
 	}
 

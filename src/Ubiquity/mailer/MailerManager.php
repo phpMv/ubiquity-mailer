@@ -154,5 +154,21 @@ class MailerManager {
 	public static function getDequeue() {
 		return self::$queue->allSent();
 	}
+
+	public static function addToQueue($class): bool {
+		return self::$queue->add($class);
+	}
+
+	public static function inQueue($class) {
+		return self::$queue->search($class);
+	}
+
+	public static function saveQueue() {
+		self::$queue->save();
+	}
+
+	public static function clearAllMessages() {
+		self::$queue->clear();
+	}
 }
 
