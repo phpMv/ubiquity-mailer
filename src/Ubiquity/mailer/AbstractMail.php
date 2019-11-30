@@ -16,7 +16,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 abstract class AbstractMail {
 
 	private $swapMethods = [
-		'to' => 'addAdress',
+		'to' => 'addAddress',
 		'cc' => 'addCC',
 		'bcc' => 'addBCC',
 		'replyTo' => 'addReplyTo',
@@ -201,7 +201,9 @@ abstract class AbstractMail {
 		if (\is_array($address)) {
 			foreach ($address as $user) {
 				$user = $this->parseUser($user);
-				$this->{$property}($user->email, isset($user->name) ? $user->name : null);
+				if (isset($user)) {
+					$this->{$property}($user->email, isset($user->name) ? $user->name : null);
+				}
 			}
 		} else {
 			$this->{$property}[] = \compact('address', 'name');
@@ -223,21 +225,18 @@ abstract class AbstractMail {
 				'email' => $user
 			];
 		} elseif (\is_object($user)) {
+			$ret = [];
 			if (\method_exists($user, 'getEmail')) {
-				$ret = [
-					'email' => $user->getEmail()
-				];
+				$ret['email'] = $user->getEmail();
 				if (\method_exists($user, 'getName')) {
-					$ret = [
-						'name' => $user->getName()
-					];
+					$ret['name'] = $user->getName();
 				}
-				return $ret;
+				return (object) $ret;
 			} else {
 				throw new MailerException('This object has no method getEmail');
 			}
 		}
-		return $user;
+		return null;
 	}
 
 	/**
@@ -257,10 +256,10 @@ abstract class AbstractMail {
 			$values = $this->{$property};
 			if (! isset($values['email'])) {
 				foreach ($values as $value) {
-					$mailer->{$method}($value['email'], $value['name'] ?? null);
+					$mailer->{$method}($value['address'], $value['name'] ?? null);
 				}
 			} else {
-				$mailer->{$method}($values['email'], $values['name'] ?? null);
+				$mailer->{$method}($values['address'], $values['name'] ?? null);
 			}
 		}
 		$mailer->Subject = $this->getSubject();

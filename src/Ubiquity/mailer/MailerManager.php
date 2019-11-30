@@ -54,11 +54,18 @@ class MailerManager {
 		$mailer->Port = $config['port'];
 		$mailer->Mailer = $config['protocol'];
 		if ($config['protocol'] === 'smtp') {
+			$mailer->isSMTP();
+			if (isset($config['SMTPOptions'])) {
+				$mailer->SMTPOptions = $config['SMTPOptions'];
+			}
 			if ($config['auth']) {
+				$mailer->SMTPAuth = true;
+				$mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
 				$mailer->Password = $config['password'];
 				$mailer->Username = $config['user'];
 			}
 		}
+		$mailer->isHTML(true);
 		self::$mailer = $mailer;
 		self::$queue = new MailerQueue();
 	}
@@ -80,12 +87,16 @@ class MailerManager {
 	}
 
 	public static function loadConfig() {
-		return self::$config = \array_merge(include self::getConfigPath(), self::$dConfig);
+		return self::$config = \array_merge(self::$dConfig, include self::getConfigPath());
 	}
 
 	public static function send(AbstractMail $mail): bool {
 		$mail->build(self::$mailer);
 		return self::$mailer->send();
+	}
+
+	public static function getErrorInfo() {
+		return self::$mailer->ErrorInfo;
 	}
 
 	public static function getNamespace() {
@@ -104,7 +115,7 @@ class MailerManager {
 		$mails = self::$queue->toSend();
 		$i = 0;
 		foreach ($mails as $mailInfos) {
-			if (isset($limit) && $limit > $i) {
+			if ((isset($limit) && $limit > $i) || ! isset($limit)) {
 				$mailClass = $mailInfos['class'];
 				$mail = new $mailClass();
 				if (self::send($mail)) {
@@ -116,6 +127,10 @@ class MailerManager {
 			}
 		}
 		return $i;
+	}
+
+	public static function sendQueuedMail($index): bool {
+		return self::$queue->send($index);
 	}
 
 	/**
@@ -163,12 +178,20 @@ class MailerManager {
 		return self::$queue->search($class);
 	}
 
-	public static function saveQueue() {
-		self::$queue->save();
+	public static function saveQueue($queue = true, $dequeue = true) {
+		self::$queue->save($queue, $dequeue);
 	}
 
 	public static function clearAllMessages() {
 		self::$queue->clear();
+	}
+
+	public static function removeFromQueue($index): bool {
+		return self::$queue->removeByIndex($index);
+	}
+
+	public static function removeFromDequeue($index): bool {
+		return self::$queue->removeFromDequeueByIndex($index);
 	}
 }
 

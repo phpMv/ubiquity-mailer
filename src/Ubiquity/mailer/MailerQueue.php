@@ -79,14 +79,25 @@ class MailerQueue {
 		];
 	}
 
-	public function save(): void {
-		$this->saveContent('queue');
-		$this->saveContent('dequeue');
+	public function save($queue = true, $dequeue = true): void {
+		if ($queue) {
+			$this->saveContent('queue');
+		}
+		if ($dequeue) {
+			$this->sortDequeue();
+			$this->saveContent('dequeue');
+		}
 	}
 
 	private function saveContent($part): void {
 		$content = "return " . UArray::asPhpArray($this->{$part}, 'array') . ';';
 		CacheManager::$cache->store($this->rootKey . $part, $content);
+	}
+
+	private function sortDequeue() {
+		\usort($this->dequeue, function ($left, $right) {
+			return $right['sentAt'] <=> $left['sentAt'];
+		});
 	}
 
 	public function toSendAt(\DateTime $date): array {
@@ -148,6 +159,22 @@ class MailerQueue {
 		}
 	}
 
+	public function removeByIndex($index): bool {
+		if (isset($this->queue[$index])) {
+			unset($this->queue[$index]);
+			return true;
+		}
+		return false;
+	}
+
+	public function removeFromDequeueByIndex($index): bool {
+		if (isset($this->dequeue[$index])) {
+			unset($this->dequeue[$index]);
+			return true;
+		}
+		return false;
+	}
+
 	public function removeAt(\DateTime $date, $inInterval = false): void {
 		foreach ($this->queue as $index => $value) {
 			if (($value['at'] ?? null) === $date) {
@@ -167,6 +194,21 @@ class MailerQueue {
 			unset($this->queue[$index]);
 			$this->dequeue[] = $mail;
 			return true;
+		}
+		return false;
+	}
+
+	public function send($index): bool {
+		if (isset($this->queue[$index])) {
+			$mailInfos = $this->queue[$index];
+			$mailClass = $mailInfos['class'];
+			$mail = new $mailClass();
+			if (MailerManager::send($mail)) {
+				$mailInfos['sentAt'] = new \DateTime();
+				unset($this->queue[$index]);
+				$this->dequeue[] = $mailInfos;
+				return true;
+			}
 		}
 		return false;
 	}
