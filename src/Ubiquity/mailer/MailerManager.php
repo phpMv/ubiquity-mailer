@@ -162,16 +162,24 @@ class MailerManager {
 		return $result;
 	}
 
-	public static function getQueue() {
+	public static function allInQueue() {
 		return self::$queue->all();
 	}
 
-	public static function getDequeue() {
+	public static function allInDequeue() {
 		return self::$queue->allSent();
 	}
 
 	public static function addToQueue($class): bool {
 		return self::$queue->add($class);
+	}
+
+	public static function sendAt($class, \DateTime $date) {
+		self::$queue->sendAt($class, $date);
+	}
+
+	public static function sendBetween($class, \DateTime $startDate, \DateTime $endDate) {
+		self::$queue->sendBetween($class, $startDate, $endDate);
 	}
 
 	public static function inQueue($class) {

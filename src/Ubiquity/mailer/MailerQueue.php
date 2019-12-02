@@ -40,10 +40,8 @@ class MailerQueue {
 
 	public function add(string $mailerClass): bool {
 		if (! $this->search($mailerClass)) {
-			$d = (new \DateTime())->add(new \DateInterval('PT1H'));
 			$this->queue[] = [
-				'class' => $mailerClass,
-				'at' => $d
+				'class' => $mailerClass
 			];
 			return true;
 		}
