@@ -81,6 +81,7 @@ class MailerManager {
 			if (@\file_put_contents($path, $content, LOCK_EX) === false) {
 				throw new \Exception("Unable to write mailer config file: {$path}");
 			}
+			return true;
 		} else {
 			throw new \Exception("Unable to create folder : {$path}");
 		}
