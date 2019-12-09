@@ -75,7 +75,7 @@ class MailerManager {
 	}
 
 	public static function saveConfig($config) {
-		$content = "<?php\nreturn " . UArray::asPhpArray($config, 'array') . ';';
+		$content = "<?php\nreturn " . UArray::asPhpArray($config, 'array', 1, true) . ';';
 		$path = self::getConfigPath();
 		if (UFileSystem::safeMkdir(\dirname($path))) {
 			if (@\file_put_contents($path, $content, LOCK_EX) === false) {

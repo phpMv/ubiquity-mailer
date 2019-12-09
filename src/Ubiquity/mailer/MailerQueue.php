@@ -32,9 +32,13 @@ class MailerQueue {
 		$cache = CacheManager::$cache;
 		if ($cache->exists($this->rootKey . 'queue')) {
 			$this->queue = $cache->fetch($this->rootKey . 'queue');
+		} else {
+			$this->queue = [];
 		}
 		if ($cache->exists($this->rootKey . 'dequeue')) {
 			$this->dequeue = $cache->fetch($this->rootKey . 'dequeue');
+		} else {
+			$this->dequeue = [];
 		}
 	}
 
