@@ -247,6 +247,10 @@ abstract class AbstractMail {
 		$this->view = new View();
 	}
 
+	/**
+	 * Define the message body
+	 * To override
+	 */
 	abstract public function body();
 
 	public function bodyText() {}
@@ -266,6 +270,7 @@ abstract class AbstractMail {
 		$mailer->Body = $this->body();
 		$mailer->AltBody = $this->bodyText();
 		$this->buildAttachments($mailer);
+		$this->buildRowAttachments($mailer);
 		if (isset($this->callback)) {
 			$mailer->action_function = $this->callback;
 		}
@@ -288,6 +293,20 @@ abstract class AbstractMail {
 			$this->view->setVars($pData);
 		}
 		return $this->view->render($viewName, TRUE);
+	}
+
+	public function hasRecipients() {
+		$res = 0;
+		if (\is_array($this->to)) {
+			$res += \sizeof($this->to);
+		}
+		if (\is_array($this->cc)) {
+			$res += \sizeof($this->cc);
+		}
+		if (\is_array($this->bcc)) {
+			$res += \sizeof($this->bcc);
+		}
+		return $res > 0;
 	}
 }
 

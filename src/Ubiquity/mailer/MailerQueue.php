@@ -207,6 +207,15 @@ class MailerQueue {
 			$mail = new $mailClass();
 			if (MailerManager::send($mail)) {
 				$mailInfos['sentAt'] = new \DateTime();
+				$mailInfos['to'] = $mail->to;
+				$mailInfos['cc'] = $mail->cc;
+				$mailInfos['bcc'] = $mail->bcc;
+				$mailInfos['from'] = $mail->from;
+				$mailInfos['subject'] = $mail->subject;
+				$mailInfos['attachments'] = $mail->attachments;
+				$mailInfos['rawAttachments'] = $mail->rawAttachments;
+				$mailInfos['body'] = $mail->body();
+				$mailInfos['bodyText'] = $mail->bodyText();
 				unset($this->queue[$index]);
 				$this->dequeue[] = $mailInfos;
 				return true;
