@@ -255,12 +255,18 @@ abstract class AbstractMail {
 
 	public function bodyText() {}
 
+	protected function getMailPropertyValues($property) {
+		return $this->{$property};
+	}
+
 	public function build(PHPMailer $mailer) {
 		foreach ($this->swapMethods as $property => $method) {
-			$values = $this->{$property};
+			$values = $this->getMailPropertyValues($property);
 			if (! isset($values['email'])) {
-				foreach ($values as $value) {
-					$mailer->{$method}($value['address'], $value['name'] ?? null);
+				if (\is_array($values)) {
+					foreach ($values as $value) {
+						$mailer->{$method}($value['address'], $value['name'] ?? null);
+					}
 				}
 			} else {
 				$mailer->{$method}($values['address'], $values['name'] ?? null);

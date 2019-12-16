@@ -96,6 +96,13 @@ class MailerManager {
 		return self::$mailer->send();
 	}
 
+	public static function sendArray(AbstractMail $mail, array $values): bool {
+		$arrayMail = ArrayMail::copyFrom($mail);
+		$arrayMail->addArrayInfos($values);
+		$arrayMail->build(self::$mailer);
+		return self::$mailer->send();
+	}
+
 	public static function getErrorInfo() {
 		return self::$mailer->ErrorInfo;
 	}
@@ -132,6 +139,16 @@ class MailerManager {
 
 	public static function sendQueuedMail($index): bool {
 		return self::$queue->send($index);
+	}
+
+	/**
+	 * Send again a mail in dequeue
+	 *
+	 * @param int $index
+	 * @return bool
+	 */
+	public static function sendAgain($index): bool {
+		return self::$queue->sendAgain($index);
 	}
 
 	/**

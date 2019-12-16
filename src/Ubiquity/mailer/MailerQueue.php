@@ -200,6 +200,44 @@ class MailerQueue {
 		return false;
 	}
 
+	public function sendAgain($index): bool {
+		if (isset($this->dequeue[$index])) {
+			$mailInfos = $this->dequeue[$index];
+			$mail = new ArrayMail();
+			$mail->setArrayInfos($mailInfos);
+			if (MailerManager::send($mail)) {
+				$mailInfos['sentAt'] = new \DateTime();
+				$this->dequeue[] = $mailInfos;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function sendArray($index, array $values): bool {
+		if (isset($this->queue[$index])) {
+			$mailInfos = $this->queue[$index];
+			$mailClass = $mailInfos['class'];
+			$mail = new $mailClass();
+			if (MailerManager::send($mail)) {
+				$mailInfos['sentAt'] = new \DateTime();
+				$mailInfos['to'] = $mail->to;
+				$mailInfos['cc'] = $mail->cc;
+				$mailInfos['bcc'] = $mail->bcc;
+				$mailInfos['from'] = $mail->from;
+				$mailInfos['subject'] = $mail->subject;
+				$mailInfos['attachments'] = $mail->attachments;
+				$mailInfos['rawAttachments'] = $mail->rawAttachments;
+				$mailInfos['body'] = $mail->body();
+				$mailInfos['bodyText'] = $mail->bodyText();
+				unset($this->queue[$index]);
+				$this->dequeue[] = $mailInfos;
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public function send($index): bool {
 		if (isset($this->queue[$index])) {
 			$mailInfos = $this->queue[$index];
