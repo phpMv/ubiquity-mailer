@@ -96,11 +96,8 @@ class MailerManager {
 		return self::$mailer->send();
 	}
 
-	public static function sendArray(AbstractMail $mail, array $values): bool {
-		$arrayMail = ArrayMail::copyFrom($mail);
-		$arrayMail->addArrayInfos($values);
-		$arrayMail->build(self::$mailer);
-		return self::$mailer->send();
+	public static function sendArray(array $values): bool {
+		return self::$queue->sendArray($values);
 	}
 
 	public static function getErrorInfo() {
