@@ -119,17 +119,10 @@ class MailerManager {
 	public static function sendQueue($limit = NULL): int {
 		$mails = self::$queue->toSend();
 		$i = 0;
-		foreach ($mails as $mailInfos) {
-			if ((isset($limit) && $limit > $i) || ! isset($limit)) {
-				$mailClass = $mailInfos['class'];
-				$mail = new $mailClass();
-				if (self::send($mail)) {
-					self::$queue->sent($mailInfos['index']);
-				}
-				$i ++;
-			} else {
-				break;
-			}
+		$limit = $limit ?? \sizeof($mails);
+		while ($i < $limit) {
+			self::$queue->send($i);
+			$i ++;
 		}
 		return $i;
 	}

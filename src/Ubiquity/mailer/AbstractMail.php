@@ -167,9 +167,13 @@ abstract class AbstractMail {
 	}
 
 	protected function buildAttachments(PHPMailer $mailer) {
+		$attachDir = $this->getAttachmentsDir();
 		foreach ($this->attachments as $attach) {
 			$options = $attach['options'] ?? [];
-			$mailer->addAttachment($attach['file'], $options['name'] ?? '', $options['encoding'] ?? 'base64', $options['type'] ?? '', $options['disposition'] ?? 'attachment');
+			$file = $attachDir . $attach['file'];
+			if (\file_exists($file)) {
+				$mailer->addAttachment($file, $options['name'] ?? '', $options['encoding'] ?? 'base64', $options['type'] ?? '', $options['disposition'] ?? 'attachment');
+			}
 		}
 	}
 
@@ -255,13 +259,9 @@ abstract class AbstractMail {
 
 	public function bodyText() {}
 
-	protected function getMailPropertyValues($property) {
-		return $this->{$property};
-	}
-
 	public function build(PHPMailer $mailer) {
 		foreach ($this->swapMethods as $property => $method) {
-			$values = $this->getMailPropertyValues($property);
+			$values = $this->{$property};
 			if (! isset($values['email'])) {
 				if (\is_array($values)) {
 					foreach ($values as $value) {
@@ -313,6 +313,15 @@ abstract class AbstractMail {
 			$res += \sizeof($this->bcc);
 		}
 		return $res > 0;
+	}
+
+	private function getMailerDir() {
+		$rc = new \ReflectionClass(\get_class($this));
+		return \dirname($rc->getFileName()) . DIRECTORY_SEPARATOR;
+	}
+
+	public function getAttachmentsDir() {
+		return $this->getMailerDir() . 'attachments' . DIRECTORY_SEPARATOR;
 	}
 }
 

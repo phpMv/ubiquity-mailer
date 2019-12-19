@@ -241,6 +241,7 @@ class MailerQueue {
 				$mailInfos['rawAttachments'] = $mail->rawAttachments;
 				$mailInfos['body'] = $mail->body();
 				$mailInfos['bodyText'] = $mail->bodyText();
+				$mailInfos['attachmentsDir'] = $mail->getAttachmentsDir();
 				unset($this->queue[$index]);
 				$this->dequeue[] = $mailInfos;
 				return true;

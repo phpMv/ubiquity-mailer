@@ -1,6 +1,8 @@
 <?php
 namespace Ubiquity\mailer;
 
+use PHPMailer\PHPMailer\PHPMailer;
+
 class ArrayMail extends AbstractMail {
 
 	/**
@@ -24,19 +26,9 @@ class ArrayMail extends AbstractMail {
 	 */
 	public function setArrayInfos(array $arrayInfos) {
 		$this->arrayInfos = $arrayInfos;
-		$this->attachments = $this->arrayInfos['attachments'] ?? [];
-		$this->rawAttachments = $this->arrayInfos['rawAttachments'] ?? [];
 	}
 
 	public function addArrayInfos(array $arrayInfos) {
-		if (isset($arrayInfos['attachments'])) {
-			$this->attachments = $this->arrayInfos['attachments'];
-			unset($arrayInfos['attachments']);
-		}
-		if (isset($arrayInfos['rawAttachments'])) {
-			$this->attachments = $this->arrayInfos['rawAttachments'];
-			unset($arrayInfos['rawAttachments']);
-		}
 		foreach ($arrayInfos as $k => $v) {
 			$this->arrayInfos[$k] = $v;
 		}
@@ -54,8 +46,13 @@ class ArrayMail extends AbstractMail {
 		return $this->arrayInfos['subject'] ?? '';
 	}
 
-	protected function getMailPropertyValues($property) {
-		return $this->arrayInfos[$property] ?? null;
+	public function build(PHPMailer $mailer) {
+		foreach ($this->arrayInfos as $key => $value) {
+			if (\property_exists($this, $key)) {
+				$this->{$key} = $value;
+			}
+		}
+		parent::build($mailer);
 	}
 
 	public static function copyFrom(AbstractMail $mail) {
@@ -73,6 +70,10 @@ class ArrayMail extends AbstractMail {
 			'replyTo' => $mail->replyTo
 		]);
 		return $newMail;
+	}
+
+	public function getAttachmentsDir() {
+		return $this->arrayInfos['attachmentsDir'] ?? parent::getAttachmentsDir();
 	}
 }
 
