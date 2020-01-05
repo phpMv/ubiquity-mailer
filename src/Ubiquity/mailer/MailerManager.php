@@ -88,7 +88,12 @@ class MailerManager {
 	}
 
 	public static function loadConfig() {
-		return self::$config = \array_merge(self::$dConfig, include self::getConfigPath());
+		$path = self::getConfigPath();
+		$config = [];
+		if (\file_exists($path)) {
+			$config = include self::getConfigPath();
+		}
+		return self::$config = \array_merge(self::$dConfig, $config);
 	}
 
 	public static function send(AbstractMail $mail): bool {
