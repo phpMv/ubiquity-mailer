@@ -6,6 +6,8 @@ use Ubiquity\cache\ClassUtils;
 
 class MailerClass {
 
+	protected $num;
+
 	protected $name;
 
 	protected $shortname;
@@ -33,6 +35,22 @@ class MailerClass {
 	protected $sentAt;
 
 	protected $attachmentsDir;
+
+	/**
+	 *
+	 * @return mixed
+	 */
+	public function getNum() {
+		return $this->num;
+	}
+
+	/**
+	 *
+	 * @param mixed $num
+	 */
+	public function setNum($num) {
+		$this->num = $num;
+	}
 
 	/**
 	 *
@@ -261,8 +279,10 @@ class MailerClass {
 	public static function init() {
 		$result = [];
 		$classes = MailerManager::getMailClasses(true);
-		foreach ($classes as $class) {
-			$result[] = self::initOne($class);
+		foreach ($classes as $index => $class) {
+			$mailerClass = self::initOne($class);
+			$mailerClass->setNum($index + 1);
+			$result[] = $mailerClass;
 		}
 		return $result;
 	}

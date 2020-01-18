@@ -104,12 +104,13 @@ class MailerQueuedClass extends MailerClass {
 		} else {
 			$mails = MailerManager::allInQueue();
 		}
-		foreach ($mails as $mail) {
+		foreach ($mails as $index => $mail) {
 			if (! $dec) {
 				$mailerClass = self::initOne($mail['class']);
 			} else {
 				$mailerClass = self::initOneFromInfos($mail['class'], $mail);
 			}
+			$mailerClass->setNum($index + 1);
 			$mailerClass->setAt($mail['at'] ?? null);
 			$mailerClass->setBetween($mail['between'] ?? null);
 			$mailerClass->setAnd($mail['and'] ?? null);
