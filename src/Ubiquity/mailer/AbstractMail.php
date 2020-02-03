@@ -246,9 +246,11 @@ abstract class AbstractMail {
 	/**
 	 * Constructor
 	 * initialize $view variable
+	 * call initialize method
 	 */
 	public function __construct() {
 		$this->view = new View();
+		$this->initialize();
 	}
 
 	/**
