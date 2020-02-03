@@ -265,10 +265,16 @@ abstract class AbstractMail {
 	 */
 	abstract protected function initialize();
 
+	/**
+	 * Called before the mail build
+	 * To override
+	 */
+	protected function beforeBuild() {}
+
 	public function bodyText() {}
 
 	public function build(PHPMailer $mailer) {
-		$this->initialize();
+		$this->beforeBuild();
 		foreach ($this->swapMethods as $property => $method) {
 			$values = $this->{$property};
 			if (! isset($values['email'])) {
