@@ -37,6 +37,7 @@ class MailerManager {
 		'user' => '',
 		'password' => '',
 		'protocol' => 'smtp',
+		'CharSet' => 'utf-8',
 		'ns' => 'mail'
 	];
 
@@ -67,6 +68,7 @@ class MailerManager {
 		}
 		$mailer->isHTML(true);
 		self::$mailer = $mailer;
+		self::applyConfig($config);
 		self::$queue = new MailerQueue();
 	}
 
@@ -158,6 +160,28 @@ class MailerManager {
 			echo 'Mail directory is ' . $typeDir . "\n";
 		}
 		return UFileSystem::glob_recursive($typeDir . \DS . '*.php');
+	}
+
+	protected static function applyConfig($config) {
+		$config = \array_diff_key($config, [
+			'host' => 0,
+			'port' => 0,
+			'protocol' => 0,
+			'SMTPOptions' => 0,
+			'auth' => 0,
+			'password' => 0,
+			'user' => 0
+		]);
+		$reflex = new \ReflectionClass(self::$mailer);
+		foreach ($config as $k => $v) {
+			if ($reflex->hasProperty($k)) {
+				$prop = $reflex->getProperty($k);
+				$prop->setAccessible(true);
+				$prop->setValue(self::$mailer, $v);
+			} elseif ($reflex->hasMethod($k)) {
+				$reflex->getMethod($k)->invoke(self::$mailer, $v);
+			}
+		}
 	}
 
 	/**
