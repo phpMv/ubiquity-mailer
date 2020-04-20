@@ -75,5 +75,7 @@ class ArrayMail extends AbstractMail {
 	public function getAttachmentsDir() {
 		return $this->arrayInfos['attachmentsDir'] ?? parent::getAttachmentsDir();
 	}
+
+	protected function initialize() {}
 }
 
