@@ -92,7 +92,7 @@ class MailerQueue {
 	}
 
 	private function saveContent($part): void {
-		$content = "return " . UArray::asPhpArray($this->{$part}, 'array') . ';';
+		$content = "<?php return " . UArray::asPhpArray($this->{$part}, 'array') . ';';
 		CacheManager::$cache->store($this->rootKey . $part, $content);
 	}
 
