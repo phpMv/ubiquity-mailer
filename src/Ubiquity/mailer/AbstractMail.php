@@ -94,7 +94,7 @@ abstract class AbstractMail {
 	 * @return $this
 	 */
 	public function from($address, $name = null) {
-		return $this->setAddress($address, $name, 'from');
+		return $this->setAddress($address, $name??$address, 'from');
 	}
 
 	/**
@@ -105,7 +105,7 @@ abstract class AbstractMail {
 	 * @return $this
 	 */
 	public function to($address, $name = null) {
-		return $this->setAddress($address, $name, 'to');
+		return $this->setAddress($address, $name??$address, 'to');
 	}
 
 	/**
@@ -116,7 +116,7 @@ abstract class AbstractMail {
 	 * @return $this
 	 */
 	public function cc($address, $name = null) {
-		return $this->setAddress($address, $name, 'cc');
+		return $this->setAddress($address, $name??$address, 'cc');
 	}
 
 	/**
@@ -127,7 +127,7 @@ abstract class AbstractMail {
 	 * @return $this
 	 */
 	public function bcc($address, $name = null) {
-		return $this->setAddress($address, $name, 'bcc');
+		return $this->setAddress($address, $name??$address, 'bcc');
 	}
 
 	/**
@@ -138,7 +138,7 @@ abstract class AbstractMail {
 	 * @return $this
 	 */
 	public function replyTo($address, $name = null) {
-		return $this->setAddress($address, $name, 'replyTo');
+		return $this->setAddress($address, $name??$address, 'replyTo');
 	}
 
 	/**
