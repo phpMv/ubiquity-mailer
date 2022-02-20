@@ -4,18 +4,14 @@ namespace Ubiquity\mailer\models;
 /**
   * Mailer AuthEmailValidationMail
   */
-class AuthEmailValidationMail extends \Ubiquity\mailer\AbstractMail {
-
-	private string $url='';
-
-	private $expire;
+class AuthEmailValidationMail extends AbstractAuthUrlExpireMail {
 
 	/**
 	 *
 	 * {@inheritdoc}
 	 * @see \Ubiquity\mailer\AbstractMail::bodyText()
 	 */
-	public function bodyText() {
+	public function bodyText():string {
 		return sprintf('Click the below link to confirm your email. The link will expire in %s: %s',$this->expire,$this->url);
 	}
 
@@ -33,29 +29,8 @@ class AuthEmailValidationMail extends \Ubiquity\mailer\AbstractMail {
 	 * {@inheritdoc}
 	 * @see \Ubiquity\mailer\AbstractMail::body()
 	 */
-	public function body() {
+	public function body():string {
 		return \sprintf('Click the below link to confirm your email. The link will expire in %s.<hr><a href="%s">Confirm your email</a>',$this->expire,$this->url);
-	}
-
-	/**
-	 * @param string $url
-	 */
-	public function setUrl(string $url): void {
-		$this->url = $url;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getExpire() {
-		return $this->expire;
-	}
-
-	/**
-	 * @param mixed $expire
-	 */
-	public function setExpire($expire): void {
-		$this->expire = $expire;
 	}
 
 }

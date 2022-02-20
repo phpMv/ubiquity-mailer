@@ -20,17 +20,17 @@ class MailerManager {
 	 *
 	 * @var PHPMailer
 	 */
-	private static $mailer;
+	private static PHPMailer $mailer;
 
 	/**
 	 *
 	 * @var MailerQueue
 	 */
-	private static $queue;
+	private static MailerQueue $queue;
 
-	private static $config;
+	private static array $config;
 
-	private static $dConfig = [
+	private static array $dConfig = [
 		'host' => '127.0.0.1',
 		'port' => 587,
 		'auth' => false,
@@ -41,7 +41,7 @@ class MailerManager {
 		'ns' => 'mail'
 	];
 
-	private static function getConfigPath() {
+	private static function getConfigPath():string {
 		return \ROOT . 'config' . \DS . 'mailer.php';
 	}
 
@@ -89,7 +89,7 @@ class MailerManager {
 		}
 	}
 
-	public static function loadConfig() {
+	public static function loadConfig():array {
 		$path = self::getConfigPath();
 		$config = [];
 		if (\file_exists($path)) {
@@ -111,7 +111,7 @@ class MailerManager {
 		return self::$mailer->ErrorInfo;
 	}
 
-	public static function getNamespace() {
+	public static function getNamespace():string {
 		return self::$config['ns'] ?? 'mail';
 	}
 
@@ -119,7 +119,7 @@ class MailerManager {
 	 *
 	 * @return \PHPMailer\PHPMailer\PHPMailer
 	 */
-	public static function getMailer() {
+	public static function getMailer():PHPMailer {
 		return MailerManager::$mailer;
 	}
 
@@ -134,7 +134,7 @@ class MailerManager {
 		return $i;
 	}
 
-	public static function sendQueuedMail($index): bool {
+	public static function sendQueuedMail(int $index): bool {
 		return self::$queue->send($index);
 	}
 
@@ -144,7 +144,7 @@ class MailerManager {
 	 * @param int $index
 	 * @return bool
 	 */
-	public static function sendAgain($index): bool {
+	public static function sendAgain(int $index): bool {
 		return self::$queue->sendAgain($index);
 	}
 
@@ -154,7 +154,7 @@ class MailerManager {
 	 * @param boolean $silent
 	 * @return array
 	 */
-	protected static function _getFiles($silent = false) {
+	protected static function _getFiles(bool $silent = false):array {
 		$typeDir = \ROOT . \DS . \str_replace("\\", \DS, self::getNamespace());
 		if (! $silent) {
 			echo 'Mail directory is ' . $typeDir . "\n";
@@ -190,7 +190,7 @@ class MailerManager {
 	 * @param boolean $silent
 	 * @return string[]
 	 */
-	public static function getMailClasses($silent = false) {
+	public static function getMailClasses($silent = false):array {
 		$result = [];
 		$files = self::_getFiles($silent);
 		foreach ($files as $file) {
@@ -199,11 +199,11 @@ class MailerManager {
 		return $result;
 	}
 
-	public static function allInQueue() {
+	public static function allInQueue():array {
 		return self::$queue->all();
 	}
 
-	public static function allInDequeue() {
+	public static function allInDequeue():array {
 		return self::$queue->allSent();
 	}
 
@@ -219,7 +219,7 @@ class MailerManager {
 		self::$queue->sendBetween($class, $startDate, $endDate);
 	}
 
-	public static function inQueue($class) {
+	public static function inQueue($class):bool {
 		return self::$queue->search($class);
 	}
 

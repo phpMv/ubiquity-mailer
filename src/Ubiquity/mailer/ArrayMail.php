@@ -15,7 +15,7 @@ class ArrayMail extends AbstractMail {
 	 *
 	 * @return array
 	 */
-	public function getArrayInfos() {
+	public function getArrayInfos(): array {
 		return $this->arrayInfos;
 	}
 
@@ -34,15 +34,15 @@ class ArrayMail extends AbstractMail {
 		}
 	}
 
-	public function body() {
+	public function body():string {
 		return $this->arrayInfos['body'] ?? '';
 	}
 
-	public function bodyText() {
+	public function bodyText():string {
 		return $this->arrayInfos['bodyText'] ?? '';
 	}
 
-	public function getSubject() {
+	public function getSubject():string {
 		return $this->arrayInfos['subject'] ?? '';
 	}
 
@@ -72,7 +72,7 @@ class ArrayMail extends AbstractMail {
 		return $newMail;
 	}
 
-	public function getAttachmentsDir() {
+	public function getAttachmentsDir():string {
 		return $this->arrayInfos['attachmentsDir'] ?? parent::getAttachmentsDir();
 	}
 

@@ -15,7 +15,7 @@ use PHPMailer\PHPMailer\PHPMailer;
  */
 abstract class AbstractMail {
 
-	private $swapMethods = [
+	private array $swapMethods = [
 		'to' => 'addAddress',
 		'cc' => 'addCC',
 		'bcc' => 'addBCC',
@@ -28,56 +28,56 @@ abstract class AbstractMail {
 	 *
 	 * @var array
 	 */
-	public $from = [];
+	public array $from = [];
 
 	/**
 	 * The "to" recipients of the message.
 	 *
 	 * @var array
 	 */
-	public $to = [];
+	public array $to = [];
 
 	/**
 	 * The "cc" recipients of the message.
 	 *
 	 * @var array
 	 */
-	public $cc = [];
+	public array $cc = [];
 
 	/**
 	 * The "bcc" recipients of the message.
 	 *
 	 * @var array
 	 */
-	public $bcc = [];
+	public array $bcc = [];
 
 	/**
 	 * The "reply to" recipients of the message.
 	 *
 	 * @var array
 	 */
-	public $replyTo = [];
+	public array $replyTo = [];
 
 	/**
 	 * The subject of the message.
 	 *
 	 * @var string
 	 */
-	public $subject;
+	public string $subject;
 
 	/**
 	 * The attachments for the message.
 	 *
 	 * @var array
 	 */
-	public $attachments = [];
+	public array $attachments = [];
 
 	/**
 	 * The raw attachments for the message.
 	 *
 	 * @var array
 	 */
-	public $rawAttachments = [];
+	public array $rawAttachments = [];
 
 	/**
 	 * The callback for the message.
@@ -93,7 +93,7 @@ abstract class AbstractMail {
 	 * @param string|null $name
 	 * @return $this
 	 */
-	public function from($address, $name = null) {
+	public function from($address, $name = null): self {
 		return $this->setAddress($address, $name??$address, 'from');
 	}
 
@@ -104,7 +104,7 @@ abstract class AbstractMail {
 	 * @param string|null $name
 	 * @return $this
 	 */
-	public function to($address, $name = null) {
+	public function to($address, $name = null): self {
 		return $this->setAddress($address, $name??$address, 'to');
 	}
 
@@ -115,7 +115,7 @@ abstract class AbstractMail {
 	 * @param string|null $name
 	 * @return $this
 	 */
-	public function cc($address, $name = null) {
+	public function cc($address, $name = null): self {
 		return $this->setAddress($address, $name??$address, 'cc');
 	}
 
@@ -126,7 +126,7 @@ abstract class AbstractMail {
 	 * @param string|null $name
 	 * @return $this
 	 */
-	public function bcc($address, $name = null) {
+	public function bcc($address, $name = null): self {
 		return $this->setAddress($address, $name??$address, 'bcc');
 	}
 
@@ -137,7 +137,7 @@ abstract class AbstractMail {
 	 * @param string|null $name
 	 * @return $this
 	 */
-	public function replyTo($address, $name = null) {
+	public function replyTo($address, $name = null):self {
 		return $this->setAddress($address, $name??$address, 'replyTo');
 	}
 
@@ -148,7 +148,7 @@ abstract class AbstractMail {
 	 * @param array $options
 	 * @return $this
 	 */
-	public function attachFile($file, array $options = []) {
+	public function attachFile($file, array $options = []): self {
 		$this->attachments[] = compact('file', 'options');
 		return $this;
 	}
@@ -161,7 +161,7 @@ abstract class AbstractMail {
 	 * @param array $options
 	 * @return $this
 	 */
-	public function attachData($data, $name, array $options = []) {
+	public function attachData($data, $name, array $options = []):self {
 		$this->rawAttachments[] = compact('data', 'name', 'options');
 		return $this;
 	}
@@ -184,7 +184,7 @@ abstract class AbstractMail {
 		}
 	}
 
-	public function getSubject() {
+	public function getSubject():string {
 		return $this->subject ?? \get_class();
 	}
 
@@ -196,7 +196,7 @@ abstract class AbstractMail {
 	 * @param string $property
 	 * @return $this
 	 */
-	protected function setAddress($address, $name = null, $property = 'to') {
+	protected function setAddress($address, $name = null, $property = 'to'):self {
 		if (\is_object($address)) {
 			$address = [
 				$address
@@ -257,7 +257,7 @@ abstract class AbstractMail {
 	 * Define the message body
 	 * To override
 	 */
-	abstract public function body();
+	abstract public function body():string ;
 
 	/**
 	 * Initialize the mail, before buiding
@@ -271,7 +271,7 @@ abstract class AbstractMail {
 	 */
 	protected function beforeBuild() {}
 
-	public function bodyText() {}
+	public function bodyText():?string {}
 
 	public function build(PHPMailer $mailer) {
 		$this->beforeBuild();
@@ -316,7 +316,7 @@ abstract class AbstractMail {
 		return $this->view->render($viewName, TRUE);
 	}
 
-	public function hasRecipients() {
+	public function hasRecipients():bool {
 		$res = 0;
 		if (\is_array($this->to)) {
 			$res += \sizeof($this->to);
@@ -330,12 +330,12 @@ abstract class AbstractMail {
 		return $res > 0;
 	}
 
-	private function getMailerDir() {
+	private function getMailerDir():string {
 		$rc = new \ReflectionClass(\get_class($this));
 		return \dirname($rc->getFileName()) . DIRECTORY_SEPARATOR;
 	}
 
-	public function getAttachmentsDir() {
+	public function getAttachmentsDir():string {
 		return $this->getMailerDir() . 'attachments' . DIRECTORY_SEPARATOR;
 	}
 }
